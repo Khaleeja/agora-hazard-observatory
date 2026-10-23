@@ -1,0 +1,21 @@
+@if (eventCount()) {
+  <span class="event-count" [class.event-count--truncated]="eventCount()!.truncated">
+    {{ eventCount()!.text }}
+  </span>
+}
+@if (filterSummary()) {
+  <button
+    class="filter-summary-btn"
+    type="button"
+    (click)="op.toggle($event)"
+    [attr.aria-label]="'Active filters: ' + filterSummary() + '. Press to expand.'"
+    [attr.aria-expanded]="isOpen()"
+    aria-haspopup="dialog"
+  >
+    <span class="filter-summary" aria-hidden="true">{{ filterSummary() }}</span>
+    <i class="pi pi-angle-down summary-chevron" aria-hidden="true"></i>
+  </button>
+  <p-popover #op (onShow)="isOpen.set(true)" (onHide)="isOpen.set(false)">
+    <p class="summary-popover-text">{{ filterSummary() }}</p>
+  </p-popover>
+}

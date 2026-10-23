@@ -1,0 +1,271 @@
+:host {
+  display: block;
+  height: 100%;
+  color: var(--color-text-primary);
+}
+
+.filter-form {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 0.875rem 1rem 1rem;
+  overflow-y: auto;
+}
+
+// ── Section ────────────────────────────────────────────────
+.filter-section {
+  padding-bottom: 0.875rem;
+  margin-bottom: 0.875rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.section-title {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-text-muted);
+  margin: 0 0 0.5rem;
+}
+
+// ── Field primitives ────────────────────────────────────────
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.field-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+input[type='date'] {
+  padding: 0.35rem 0.55rem;
+  background: var(--color-bg-main);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  color: var(--color-text-primary);
+  font-size: 0.875rem;
+  font-family: inherit;
+  color-scheme: dark;
+  width: 100%;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+
+  &:focus {
+    outline: none;
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-accent) 20%, transparent);
+  }
+}
+
+:host-context([data-theme="light"]) input[type='date'] {
+  color-scheme: light;
+  background: #ffffff;
+  border: 1px solid #8fa3bc;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+// ── Date Range ──────────────────────────────────────────────
+.field-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.field-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.switch-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
+}
+
+.switch-text {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+input[type='date'].dimmed {
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+// ── Magnitude ───────────────────────────────────────────────
+.range-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.5rem;
+
+  .field {
+    flex: 1;
+  }
+}
+
+.range-dash {
+  font-size: 1.125rem;
+  color: var(--color-text-muted);
+  padding-bottom: 0.55rem;
+  flex-shrink: 0;
+}
+
+// ── Results ─────────────────────────────────────────────────
+.sort-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-top: 0.5rem;
+}
+
+.sort-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.sort-btn {
+  flex: 1;
+  padding: 0.35rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-overlay);
+  color: var(--color-text-muted);
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    color 0.15s;
+
+  &:hover {
+    background: var(--color-bg-overlay-hover);
+    color: var(--color-text-primary);
+  }
+
+  &.active {
+    background: color-mix(in srgb, var(--color-accent) 15%, transparent);
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+  }
+}
+
+// ── Severity ────────────────────────────────────────────────
+.sev-btn {
+  &[data-sev='Low'].active    { background: rgba(var(--color-severity-low-rgb), var(--severity-badge-opacity)); border-color: var(--color-severity-low); color: var(--color-severity-low); }
+  &[data-sev='Medium'].active { background: rgba(var(--color-severity-med-rgb), var(--severity-badge-opacity)); border-color: var(--color-severity-med); color: var(--color-severity-med); }
+  &[data-sev='High'].active   { background: rgba(var(--color-severity-high-rgb), var(--severity-badge-opacity)); border-color: var(--color-severity-high); color: var(--color-severity-high); }
+}
+
+.sev-hint {
+  display: block;
+  margin-top: 0.3rem;
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+// ── Location ────────────────────────────────────────────────
+.location-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.35rem;
+}
+
+.location-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+// ── Status ──────────────────────────────────────────────────
+.filter-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.65rem;
+  margin-bottom: 0.35rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  background: var(--color-bg-overlay);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+
+  i.pi-spinner              { color: var(--color-accent); }
+  i.pi-check-circle         { color: var(--color-severity-low); }
+  i.pi-exclamation-triangle { color: var(--color-severity-high); }
+  i.pi-exclamation-circle   { color: var(--color-severity-med); }
+
+  &--truncated {
+    border-color: rgba(var(--color-severity-med-rgb), 0.35);
+    background: rgba(var(--color-severity-med-rgb), 0.06);
+    color: var(--color-severity-med);
+  }
+}
+
+// ── Field warnings (inline validation) ──────────────────────
+.field-warning,
+.limit-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.35rem;
+  margin: 0.3rem 0 0;
+  font-size: 0.75rem;
+  color: var(--color-severity-med);
+  line-height: 1.4;
+
+  i { flex-shrink: 0; margin-top: 1px; }
+}
+
+// ── Light mode overrides ─────────────────────────────────────
+:host-context([data-theme='light']) {
+  // Switch labels ("All time", "Now") are critical affordance — keep readable
+  .switch-text {
+    color: var(--color-text-primary);
+  }
+}
+
+// Boost contrast for users who set "Increase contrast" at OS level
+@media (prefers-contrast: more) {
+  .section-title,
+  .field-label,
+  .switch-text {
+    color: var(--color-text-primary);
+    font-weight: 700;
+  }
+
+  .sort-btn {
+    border-color: var(--color-text-muted);
+    color: var(--color-text-primary);
+
+    &.active {
+      border-color: var(--color-accent);
+      border-width: 2px;
+      color: var(--color-text-primary);
+    }
+  }
+
+  input[type='date'] {
+    border-color: var(--color-text-muted);
+  }
+}
+
+// ── Actions ─────────────────────────────────────────────────
+.filter-actions {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 0.75rem;
+  margin-top: auto;
+  border-top: 1px solid var(--color-border);
+}

@@ -1,0 +1,58 @@
+name: Frontend CI
+
+on:
+  push:
+    branches: [main]
+    paths: ["frontend/**"]
+  pull_request:
+    branches: [main]
+    paths: ["frontend/**"]
+
+defaults:
+  run:
+    working-directory: frontend
+
+jobs:
+  build-lint-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Create environment file
+        run: cp src/environments/environment.example.ts src/environments/environment.ts
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npx ng lint
+
+      - name: Build
+        run: npx ng build
+
+      - name: Test
+        run: npx ng test --watch=false
+
+  docker:
+    needs: build-lint-test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker image
+        working-directory: frontend
+        run: docker build --build-arg ARCGIS_API_KEY=${{ secrets.ARCGIS_API_KEY }} -t agora-frontend .
+
+      - name: Smoke test
+        run: |
+          docker run -d --name agora-test -p 8080:80 agora-frontend
+          sleep 3
+          curl -f http://localhost:8080/ || (docker logs agora-test && exit 1)
+          docker stop agora-test

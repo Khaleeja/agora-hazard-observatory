@@ -1,0 +1,292 @@
+:host {
+  display: block;
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+#cesiumContainer {
+  width: 100%;
+  height: 100%;
+}
+
+#cesiumContainer.picking {
+  cursor: crosshair;
+}
+
+.map-pick-banner {
+  position: absolute;
+  top: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 1.25rem;
+  background: rgba(6, 182, 212, 0.92);
+  backdrop-filter: blur(6px);
+  border-radius: 8px;
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+  pointer-events: auto;
+}
+
+.map-pick-cancel {
+  margin-left: 0.5rem;
+  padding: 0.25rem 0.75rem;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 5px;
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.35);
+  }
+}
+
+.map-counter {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 10;
+  display: flex;
+  align-items: baseline;
+  gap: 0.3rem;
+  padding: 0.45rem 0.9rem;
+  background: rgba(0, 0, 0, 0.62);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  pointer-events: none;
+  user-select: none;
+
+  &__visible {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #fff;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9);
+  }
+
+  &__sep {
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.4);
+  }
+
+  &__total {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.8);
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9);
+  }
+
+  &__label {
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.45);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-left: 0.25rem;
+  }
+}
+
+.map-scale {
+  position: absolute;
+  bottom: 1.75rem;
+  right: 0.75rem;
+  z-index: 10;
+  pointer-events: none;
+  user-select: none;
+
+  &__bar {
+    border: 2px solid #fff;
+    border-top: none;
+    height: 6px;
+    box-shadow:
+      0 0 0 1px rgba(0, 0, 0, 0.6),
+      0 1px 6px rgba(0, 0, 0, 0.9);
+    min-width: 30px;
+    max-width: 300px;
+  }
+
+  &__label {
+    display: block;
+    margin-top: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #fff;
+    text-shadow:
+      0 0 4px rgba(0, 0, 0, 0.9),
+      0 1px 6px rgba(0, 0, 0, 0.9);
+  }
+}
+
+// ── Map placeholder (before Cesium is loaded) ──────────────
+.map-placeholder {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+
+  &__picture {
+    position: absolute;
+    inset: 0;
+    display: block;
+  }
+
+  &__bg {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top center;
+    filter: blur(3px) brightness(0.8);
+    transform: scale(1.03); // covers the blur-edge artifacts
+    transform-origin: top center;
+  }
+
+  &__overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.22);
+  }
+
+  &__status {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 1.25rem 2rem;
+    background: rgba(0, 0, 0, 0.62);
+    backdrop-filter: blur(8px);
+    border-radius: 10px;
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 0.95rem;
+    font-weight: 500;
+
+    i { font-size: 1.4rem; }
+
+    &--error {
+      color: #fb7185;
+      i { color: #fb7185; }
+    }
+  }
+}
+
+.map-open-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.85rem 2rem;
+  background: rgba(6, 182, 212, 0.82);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(6, 182, 212, 0.55);
+  border-radius: 10px;
+  color: #fff;
+  font-size: 1.05rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.55);
+  transition:
+    background 0.2s,
+    transform 0.15s;
+
+  i { font-size: 1.25rem; }
+
+  &:hover {
+    background: rgba(6, 182, 212, 1);
+    transform: scale(1.04);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+// ── Cluster toggle ──────────────────────────────────────────
+.map-cluster-toggle {
+  position: absolute;
+  bottom: 1.75rem;
+  left: 0.75rem;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.75rem;
+  background: rgba(0, 0, 0, 0.62);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.75rem;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+
+  i { font-size: 0.8rem; }
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.78);
+    color: #fff;
+  }
+
+  &--all {
+    border-color: rgba(6, 182, 212, 0.55);
+    color: #06b6d4;
+
+    &:hover {
+      border-color: rgba(6, 182, 212, 0.8);
+      color: #22d3ee;
+    }
+  }
+}
+
+.event-popup {
+  position: absolute;
+  bottom: 2rem;
+  right: 1rem;
+  width: 400px;
+  max-width: calc(100% - 1.5rem); /* non eccede lo schermo a sinistra */
+  max-height: calc(100% - 5rem);  /* non eccede l'altezza mappa (landscape) */
+  overflow-y: auto;
+  z-index: 10;
+
+  .popup-loading {
+    padding: 1.5rem;
+    text-align: center;
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+    background: var(--color-bg-component);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+  }
+
+  .popup-close {
+    position: absolute;
+    top: 0.6rem;
+    right: 0.6rem;
+    z-index: 1;
+    background: none;
+    border: none;
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0.25rem;
+
+    &:hover {
+      color: var(--color-text-primary);
+    }
+  }
+}

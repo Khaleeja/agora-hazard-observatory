@@ -1,0 +1,239 @@
+<div class="filter-form">
+  <section class="filter-section">
+    <h2 class="section-title">Date Range</h2>
+    <div class="field-stack">
+      <div class="field">
+        <div class="field-header">
+          <span class="field-label">From</span>
+          <div class="switch-row">
+            <span class="switch-text">All time</span>
+            <p-toggleswitch [(ngModel)]="fromAll" inputId="fromAll" [tabindex]="0" ariaLabel="All time — ignore from date" />
+          </div>
+        </div>
+        <input type="date" [(ngModel)]="fromDate" [disabled]="fromAll" [class.dimmed]="fromAll" aria-label="From date" />
+      </div>
+
+      <div class="field">
+        <div class="field-header">
+          <span class="field-label">To</span>
+          <div class="switch-row">
+            <span class="switch-text">Now</span>
+            <p-toggleswitch [(ngModel)]="toNow" inputId="toNow" [tabindex]="0" ariaLabel="Now — use current date as to date" />
+          </div>
+        </div>
+        <input type="date" [(ngModel)]="toDate" [disabled]="toNow" [class.dimmed]="toNow" aria-label="To date" />
+      </div>
+    </div>
+  @if (!fromAll && !toNow && fromDate && toDate && fromDate > toDate) {
+    <p class="field-warning" role="alert">
+      <i class="pi pi-exclamation-triangle" aria-hidden="true"></i>
+      "From" date is after "To" date — no results will be returned.
+    </p>
+  }
+  </section>
+
+  <section class="filter-section">
+    <h2 class="section-title">Severity</h2>
+    <div class="sort-buttons" role="group" aria-label="Severity filter">
+      @for (sev of severityOptions; track sev.value) {
+        <button
+          class="sort-btn sev-btn"
+          [class.active]="isSeverityActive(sev.value)"
+          [attr.aria-pressed]="isSeverityActive(sev.value)"
+          [attr.data-sev]="sev.value"
+          (click)="toggleSeverity(sev.value)"
+          type="button"
+        >
+          {{ sev.label }}
+        </button>
+      }
+    </div>
+    @if (activeSeverities().length === 0) {
+      <span class="sev-hint">All severities</span>
+    }
+  </section>
+
+  <section class="filter-section">
+    <h2 class="section-title">Location</h2>
+    <div class="location-fields">
+      <div class="range-row">
+        <div class="field">
+          <span class="field-label" id="label-lat">Latitude</span>
+          <p-inputnumber
+            [(ngModel)]="posLat"
+            [min]="-90"
+            [max]="90"
+            [step]="0.0001"
+            [minFractionDigits]="4"
+            [maxFractionDigits]="4"
+            placeholder="–"
+            ariaLabel="Latitude"
+          />
+        </div>
+        <div class="field">
+          <span class="field-label" id="label-lon">Longitude</span>
+          <p-inputnumber
+            [(ngModel)]="posLon"
+            [min]="-180"
+            [max]="180"
+            [step]="0.0001"
+            [minFractionDigits]="4"
+            [maxFractionDigits]="4"
+            placeholder="–"
+            ariaLabel="Longitude"
+          />
+        </div>
+      </div>
+      <div class="location-actions">
+        <p-button
+          label="Pick from map"
+          icon="pi pi-map-marker"
+          severity="secondary"
+          [outlined]="true"
+          (onClick)="pickFromMap()"
+        />
+        @if (posLat !== null || posLon !== null) {
+          <p-button label="Clear location" severity="secondary" [text]="true" (onClick)="clearLocation()" />
+        }
+      </div>
+      @if ((posLat !== null) !== (posLon !== null)) {
+        <p class="field-warning" role="alert">
+          <i class="pi pi-exclamation-triangle" aria-hidden="true"></i>
+          Both latitude and longitude are required.
+        </p>
+      }
+      <div class="field">
+        <span class="field-label">Radius (km)</span>
+        <p-inputnumber [(ngModel)]="posRadius" [min]="1" [max]="20000" [step]="50" ariaLabel="Search radius in kilometres" />
+      </div>
+    </div>
+  </section>
+
+  <section class="filter-section">
+    <h2 class="section-title">Results</h2>
+    <div class="field">
+      <span class="field-label">Max results</span>
+      <p-inputnumber [(ngModel)]="limit" [min]="1" [max]="20000" [step]="100" placeholder="500" ariaLabel="Maximum number of results" />
+      @if (limit > 1000) {
+        <p class="limit-warning" role="alert">
+          <i class="pi pi-exclamation-triangle" aria-hidden="true"></i>
+          High values may slow loading and map rendering.
+        </p>
+      }
+    </div>
+    <div class="sort-field">
+      <span class="field-label" id="label-sort">Sort by date</span>
+      <div class="sort-buttons" role="group" aria-labelledby="label-sort">
+        <button
+          class="sort-btn"
+          [class.active]="orderBy === -1"
+          [attr.aria-pressed]="orderBy === -1"
+          (click)="setOrderBy(-1)"
+          type="button"
+        >
+          Newest first
+        </button>
+        <button
+          class="sort-btn"
+          [class.active]="orderBy === 1"
+          [attr.aria-pressed]="orderBy === 1"
+          (click)="setOrderBy(1)"
+          type="button"
+        >
+          Oldest first
+        </button>
+      </div>
+    </div>
+  </section>
+
+  @if (showMagnitude()) {
+  <section class="filter-section">
+    <h2 class="section-title">Magnitude</h2>
+    <div class="range-row">
+      <div class="field">
+        <span class="field-label">Min</span>
+        <p-inputnumber
+          [(ngModel)]="minMag"
+          [min]="-5"
+          [max]="12"
+          [step]="0.1"
+          [minFractionDigits]="1"
+          placeholder="–"
+          ariaLabel="Minimum magnitude"
+        />
+      </div>
+      <span class="range-dash" aria-hidden="true">—</span>
+      <div class="field">
+        <span class="field-label">Max</span>
+        <p-inputnumber
+          [(ngModel)]="maxMag"
+          [min]="-5"
+          [max]="12"
+          [step]="0.1"
+          [minFractionDigits]="1"
+          placeholder="–"
+          ariaLabel="Maximum magnitude"
+        />
+      </div>
+    </div>
+    @if (minMag !== null && maxMag !== null && minMag > maxMag) {
+      <p class="field-warning" role="alert">
+        <i class="pi pi-exclamation-triangle" aria-hidden="true"></i>
+        Min magnitude is greater than max — no results will be returned.
+      </p>
+    }
+  </section>
+  }
+
+  @if (showCategory()) {
+  <section class="filter-section">
+    <h2 class="section-title">Storm Category</h2>
+    <div class="sort-buttons" role="group" aria-label="Cyclone category filter">
+      @for (cat of categoryOptions; track cat.value) {
+        <button
+          class="sort-btn"
+          [class.active]="isCategoryActive(cat.value)"
+          [attr.aria-pressed]="isCategoryActive(cat.value)"
+          (click)="toggleCategory(cat.value)"
+          type="button"
+        >
+          {{ cat.label }}
+        </button>
+      }
+    </div>
+    @if (activeCategories().length === 0) {
+      <span class="sev-hint">All categories</span>
+    }
+  </section>
+  }
+
+  <div
+    class="filter-status"
+    role="status"
+    aria-live="polite"
+    aria-atomic="true"
+    [class.filter-status--truncated]="!isLoading() && isTruncated()"
+  >
+    @if (isLoading()) {
+      <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+      <span>Loading events...</span>
+    } @else if (loadError()) {
+      <i class="pi pi-exclamation-triangle" aria-hidden="true"></i>
+      <span>{{ loadError() }}</span>
+    } @else if (isTruncated()) {
+      <i class="pi pi-exclamation-circle" aria-hidden="true"></i>
+      <span>
+        {{ retrieved().toLocaleString() }} of {{ total().toLocaleString() }} events shown —
+        narrow your filters for more detail
+      </span>
+    } @else {
+      <i class="pi pi-check-circle" aria-hidden="true"></i>
+      <span>{{ retrieved().toLocaleString() }} events loaded</span>
+    }
+  </div>
+
+  <div class="filter-actions">
+    <p-button label="Reset filters" severity="secondary" [text]="true" ariaLabel="Reset all filters" (onClick)="reset()" />
+    <p-button label="Search" icon="pi pi-search" ariaLabel="Apply filters and search" (onClick)="search()" />
+  </div>
+</div>

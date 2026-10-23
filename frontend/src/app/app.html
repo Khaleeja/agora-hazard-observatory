@@ -1,0 +1,190 @@
+<nav class="skip-nav" aria-label="Skip navigation">
+  <a href="#events-list" class="skip-link" (click)="skipTo($event, 'events-list')">Skip to events list</a>
+  @if (!isMobile()) {
+    <a href="#filter-bar-region" class="skip-link" (click)="skipTo($event, 'filter-bar-region')">Skip to filter bar</a>
+  }
+  @if (isMobile()) {
+    <a href="#event-types-region" class="skip-link" (click)="skipTo($event, 'event-types-region')">Skip to event types</a>
+  }
+  <a [attr.href]="isMobile() ? '#main-filter-region' : '#filter-bar-region'" class="skip-link" (click)="skipToFilterForm($event)">Skip to filter form</a>
+</nav>
+
+<p-toast position="top-right" />
+
+<header role="banner">
+  <picture>
+    <source type="image/webp"
+            srcset="img/icon64.webp 1x, img/icon128.webp 2x, img/icon320.webp 3x" />
+    <img src="img/icon64.png"
+         srcset="img/icon64.png 1x, img/icon128.png 2x, img/icon320.png 3x"
+         alt="" width="64" height="64" />
+  </picture>
+  <h1>{{ isMobile() ? 'AGORA' : title() }}</h1>
+  @if (isMobile()) {
+    <div class="header-params">
+      <app-active-params />
+    </div>
+  }
+  <button
+    class="theme-toggle"
+    (click)="theme.toggle()"
+    [attr.aria-label]="theme.theme() === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
+    type="button"
+  >
+    <i [class]="theme.theme() === 'dark' ? 'pi pi-sun' : 'pi pi-moon'" aria-hidden="true"></i>
+  </button>
+</header>
+
+<main class="main">
+  <div class="content">
+    @if (!isMobile()) {
+      <app-filter-bar id="filter-bar-region" />
+    }
+
+    <div class="panels">
+      <!-- LIST TAB -->
+      <div
+        id="events-list"
+        class="left-side"
+        role="region"
+        aria-label="Events list"
+        tabindex="-1"
+        [class.tab-hidden]="isMobile() && mobileTab() !== 'list'"
+      >
+        <app-event-list
+          [events]="events()"
+          [isLoading]="isLoading()"
+          [asOf]="asOf()"
+          (eventSelected)="onEventSelected($event)"
+        />
+      </div>
+
+      <!-- FILTER TAB (mobile only) -->
+      @if (isMobile()) {
+        <div
+          id="mobile-filter-panel"
+          class="mobile-filter-tab"
+          role="region"
+          aria-label="Filters"
+          [class.tab-hidden]="mobileTab() !== 'filter'"
+        >
+          <div
+            class="mobile-type-toggles"
+            id="event-types-region"
+            role="group"
+            aria-label="Event types"
+            tabindex="-1"
+          >
+            @for (t of eventTypes; track t.name) {
+              <p-togglebutton
+                [ngModel]="isTypeActive(t.name)"
+                (ngModelChange)="toggleType(t.name)"
+                [onLabel]="t.label"
+                [offLabel]="t.label"
+              />
+            }
+          </div>
+          <div class="mobile-daily-bar">
+            <p-button
+              icon="pi pi-clock"
+              label="Last 24h"
+              severity="secondary"
+              [outlined]="true"
+              ariaLabel="Load events from the last 24 hours"
+              (onClick)="dailyAndSwitchTab()"
+            />
+          </div>
+          <app-filter id="main-filter-region" tabindex="-1" (searched)="mobileTab.set('list')" />
+        </div>
+      }
+
+      <!-- MAP TAB -->
+      <div
+        id="mobile-map-panel"
+        class="right-side"
+        role="region"
+        aria-label="Map"
+        [class.tab-hidden]="isMobile() && mobileTab() !== 'map'"
+      >
+        <app-map [pendingSelect]="mapSelection()" (popupClosed)="returnFocusToLastCard()" />
+      </div>
+    </div>
+
+    <!-- MOBILE TAB BAR -->
+    @if (isMobile()) {
+      <nav class="mobile-tabs" role="tablist" aria-label="Navigation">
+        <button
+          class="tab-btn"
+          role="tab"
+          [attr.aria-selected]="mobileTab() === 'list'"
+          aria-controls="events-list"
+          [class.active]="mobileTab() === 'list'"
+          (click)="mobileTab.set('list')"
+          type="button"
+        >
+          <i class="pi pi-list" aria-hidden="true"></i>
+          <span>List</span>
+        </button>
+        <button
+          class="tab-btn"
+          role="tab"
+          [attr.aria-selected]="mobileTab() === 'filter'"
+          aria-controls="mobile-filter-panel"
+          [class.active]="mobileTab() === 'filter'"
+          (click)="mobileTab.set('filter')"
+          type="button"
+        >
+          <i class="pi pi-filter" aria-hidden="true"></i>
+          <span>Filters</span>
+        </button>
+        <button
+          class="tab-btn"
+          role="tab"
+          [attr.aria-selected]="mobileTab() === 'map'"
+          aria-controls="mobile-map-panel"
+          [class.active]="mobileTab() === 'map'"
+          (click)="mobileTab.set('map')"
+          type="button"
+        >
+          <i class="pi pi-map" aria-hidden="true"></i>
+          <span>Map</span>
+        </button>
+      </nav>
+    }
+  </div>
+</main>
+
+<!-- MOBILE EVENT DIALOG -->
+@if (mobileDialogEvent()) {
+  <p-dialog
+    [visible]="true"
+    (onHide)="closeMobileDialog()"
+    [modal]="true"
+    [showHeader]="false"
+    [closable]="false"
+    [draggable]="false"
+    [resizable]="false"
+    styleClass="mobile-event-dialog"
+    aria-label="Event detail"
+  >
+    <div class="mobile-dialog-inner">
+      <button
+        class="mobile-dialog-close"
+        (click)="closeMobileDialog()"
+        type="button"
+        aria-label="Close"
+      >
+        <i class="pi pi-times" aria-hidden="true"></i>
+      </button>
+      <app-event-detail-panel [event]="mobileDialogEvent()!" />
+      <div class="mobile-dialog-footer">
+        <button class="view-on-map-btn" (click)="viewOnMap()" type="button">
+          <i class="pi pi-map-marker" aria-hidden="true"></i>
+          View on map
+        </button>
+      </div>
+    </div>
+  </p-dialog>
+}
+
+<router-outlet />

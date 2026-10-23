@@ -1,0 +1,148 @@
+<div class="detail-panel">
+  <div class="panel-header" [class]="event().properties.severity">
+    <span class="severity-pill" [class]="event().properties.severity">
+      <i [class]="severityIcon(event().properties.severity)" aria-hidden="true"></i>
+      {{ event().properties.severity }}
+    </span>
+    <h2 class="panel-title">{{ event().properties.title }}</h2>
+  </div>
+
+  <dl class="panel-body" role="none">
+    <div class="panel-row">
+      <dt>TYPE OF EVENT</dt>
+      <dd>{{ event().properties.eventType }}</dd>
+    </div>
+
+    <div class="panel-row">
+      <dt>LOCATION</dt>
+      <dd>{{ event().properties.location }}</dd>
+    </div>
+
+    <div class="panel-row">
+      <dt>DATE</dt>
+      <dd>
+        {{ event().properties.timestamp | timeFormat }}
+        <span class="muted block-line" aria-hidden="true">{{ event().properties.timestamp | timeFormat: 'absolute' }}</span>
+      </dd>
+    </div>
+
+    @if (event().properties.magnitude !== null && event().properties.magnitude !== undefined) {
+      <div class="panel-row">
+        <dt>MAGNITUDE</dt>
+        <dd>{{ (+event().properties.magnitude!).toFixed(2) }}</dd>
+      </div>
+    }
+
+    @if (event().properties.category) {
+      <div class="panel-row">
+        <dt>CATEGORY</dt>
+        <dd>{{ event().properties.category }}</dd>
+      </div>
+    }
+
+    @if (event().properties.windSpeed !== null && event().properties.windSpeed !== undefined) {
+      <div class="panel-row">
+        <dt>PEAK WIND</dt>
+        <dd>{{ event().properties.windSpeed }} kt</dd>
+      </div>
+    }
+
+    @if (event().properties.pressure !== null && event().properties.pressure !== undefined) {
+      <div class="panel-row">
+        <dt>MIN PRESSURE</dt>
+        <dd>{{ event().properties.pressure }} hPa</dd>
+      </div>
+    }
+
+    @if (event().properties.basin) {
+      <div class="panel-row">
+        <dt>BASIN</dt>
+        <dd>{{ event().properties.basin }}</dd>
+      </div>
+    }
+
+    <div class="panel-row">
+      <dt>SOURCE</dt>
+      <dd>{{ event().properties.source }}</dd>
+    </div>
+
+    @if (event().properties.sourceURL) {
+      <div class="panel-row">
+        <dt>URL</dt>
+        <dd>
+          <a
+            class="source-link"
+            [href]="event().properties.sourceURL"
+            target="_blank"
+            rel="noopener noreferrer"
+            [attr.aria-label]="event().properties.sourceURL + ' (opens in new tab)'"
+          >
+            {{ event().properties.sourceURL }}
+          </a>
+        </dd>
+      </div>
+    }
+
+    @if (event().properties.description) {
+      <div class="panel-row panel-row--full">
+        <dt>DESCRIPTION</dt>
+        <dd>{{ event().properties.description }}</dd>
+      </div>
+    }
+
+    @if (event().properties.accessibility) {
+      <div class="panel-row panel-row--full">
+        <dt>ACCESSIBILITY</dt>
+        <dd>{{ event().properties.accessibility }}</dd>
+      </div>
+    }
+
+    @if (event().geometry.type === 'Point') {
+      <div class="panel-row">
+        <dt>COORDINATES</dt>
+        <dd>
+          {{ formatLat($any(event().geometry.coordinates[1])) }},
+          {{ formatLon($any(event().geometry.coordinates[0])) }}
+          @if ($any(event().geometry.coordinates).length > 2) {
+            <span class="sr-only">, depth {{ $any(event().geometry.coordinates[2]).toFixed(1) }} km</span>
+            <span class="muted block-line" aria-hidden="true">Depth: {{ $any(event().geometry.coordinates[2]).toFixed(1) }} km</span>
+          }
+        </dd>
+      </div>
+    } @else if (event().geometry.type === 'LineString' && lastCoordinate(); as last) {
+      <div class="panel-row">
+        <dt>LAST POSITION</dt>
+        <dd>
+          {{ formatLat(last[1]) }}, {{ formatLon(last[0]) }}
+          <span class="muted block-line" aria-hidden="true">
+            as of {{ event().properties.timestamp | timeFormat: 'absolute' }}
+          </span>
+        </dd>
+      </div>
+    }
+
+    <div class="panel-row">
+      <dt>ID</dt>
+      <dd class="id-text">{{ event().properties.id }}</dd>
+    </div>
+  </dl>
+
+  @if (trackChronological().length > 0) {
+    <div class="track-section">
+      <h3 class="track-title">Full track ({{ trackChronological().length }} points)</h3>
+      <ul class="track-list">
+        @for (p of trackChronological(); track p.timestamp) {
+          <li class="track-point">
+            <span class="track-date">{{ p.timestamp | timeFormat: 'absolute' }}</span>
+            <span class="track-pos muted">{{ formatLat(p.lat) }}, {{ formatLon(p.lon) }}</span>
+            <span class="track-stats">
+              @if (p.windSpeed !== null && p.windSpeed !== undefined) { {{ p.windSpeed }} kt }
+              @if (p.pressure !== null && p.pressure !== undefined) { &nbsp;·&nbsp; {{ p.pressure }} hPa }
+              @if ((p.windSpeed === null || p.windSpeed === undefined) && (p.pressure === null || p.pressure === undefined)) { <span class="muted">no data</span> }
+            </span>
+          </li>
+        }
+      </ul>
+    </div>
+  }
+</div>

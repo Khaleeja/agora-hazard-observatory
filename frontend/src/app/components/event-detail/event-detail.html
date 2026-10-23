@@ -1,0 +1,60 @@
+<p-card
+  role="button"
+  tabindex="0"
+  [attr.aria-label]="cardLabel()"
+  (click)="selected.emit(event())"
+  (keydown.enter)="selected.emit(event())"
+  (keydown.space)="$event.preventDefault(); selected.emit(event())"
+>
+  <div [class]="'event-card ' + event().properties.severity">
+    @if (event().properties.magnitude !== null && event().properties.magnitude !== undefined) {
+      <div class="magnitude-badge" [class]="event().properties.severity" aria-hidden="true">
+        <span class="mag-value">{{ (+event().properties.magnitude!).toFixed(2) }}</span>
+        <span class="mag-label">MAG</span>
+      </div>
+    } @else if (event().properties.category) {
+      <div class="magnitude-badge" [class]="event().properties.severity" aria-hidden="true">
+        <span class="mag-value">{{ event().properties.category }}</span>
+        <span class="mag-label">CAT</span>
+      </div>
+    }
+
+    <div class="card-content">
+      <h2 class="title">{{ event().properties.location }}</h2>
+
+      <div class="details">
+        <span class="detail-item" aria-hidden="true">
+          <span class="type-tag">{{ event().properties.eventType }}</span>
+          &nbsp;·&nbsp; <span aria-hidden="true">📅</span> {{ event().properties.timestamp | timeFormat }}
+        </span>
+        <span class="detail-item severity-item" [class]="event().properties.severity" aria-hidden="true">
+          <i [class]="severityIcon(event().properties.severity)" aria-hidden="true"></i>
+          {{ event().properties.severity }}
+        </span>
+        @if (event().geometry.type === 'Point') {
+          <span class="detail-item" aria-hidden="true">
+            <span aria-hidden="true">📍</span>
+            {{ $any(event().geometry.coordinates[0]).toFixed(4) }},
+            {{ $any(event().geometry.coordinates[1]).toFixed(4) }}
+          </span>
+        } @else if (event().geometry.type === 'LineString' && lastCoordinate(); as last) {
+          <span class="detail-item" aria-hidden="true">
+            <span aria-hidden="true">📍</span>
+            {{ last[0].toFixed(4) }}, {{ last[1].toFixed(4) }}
+            <span class="muted-inline">(last known position)</span>
+          </span>
+          @if (lastTrackPoint(); as lp) {
+            <span class="detail-item" aria-hidden="true">
+              @if (lp.windSpeed !== null && lp.windSpeed !== undefined) {
+                <span aria-hidden="true">💨</span> {{ lp.windSpeed }} kt
+              }
+              @if (lp.pressure !== null && lp.pressure !== undefined) {
+                &nbsp;·&nbsp; {{ lp.pressure }} hPa
+              }
+            </span>
+          }
+        }
+      </div>
+    </div>
+  </div>
+</p-card>

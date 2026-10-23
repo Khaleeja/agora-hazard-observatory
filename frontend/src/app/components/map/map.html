@@ -1,0 +1,86 @@
+@if (mapState() === 'cesium') {
+
+  <div id="cesiumContainer" [class.picking]="isPicking()" aria-hidden="true"></div>
+
+  @if (isPicking()) {
+    <div class="map-pick-banner" role="alert">
+      <i class="pi pi-map-marker" aria-hidden="true"></i>
+      Pick mode active — click the map to set a location.
+      <button class="map-pick-cancel" (click)="cancelPick()" type="button" aria-label="Cancel pick mode — return to filter to type coordinates manually">Cancel</button>
+    </div>
+  }
+
+  @if (loadingState() === 'success') {
+    <div class="map-counter" aria-hidden="true">
+      <span class="map-counter__visible">{{ visibleCount() | number }}</span>
+      <span class="map-counter__sep">/</span>
+      <span class="map-counter__total">{{ totalLoaded() | number }}</span>
+      <span class="map-counter__label">in view</span>
+    </div>
+
+    <button
+      class="map-cluster-toggle"
+      type="button"
+      tabindex="-1"
+      [class.map-cluster-toggle--all]="!isClustered()"
+      [attr.aria-pressed]="isClustered()"
+      [attr.title]="isClustered() ? 'Switch to individual pins' : 'Switch to clustered view'"
+      (click)="toggleClusterMode()"
+    >
+      <i class="pi" [class.pi-th-large]="isClustered()" [class.pi-map-marker]="!isClustered()" aria-hidden="true"></i>
+      {{ isClustered() ? 'Clustered' : 'All pins' }}
+    </button>
+  }
+
+  @if (scaleLabel()) {
+    <div class="map-scale" aria-hidden="true">
+      <div class="map-scale__bar" [style.width.px]="scaleWidth()"></div>
+      <span class="map-scale__label">{{ scaleLabel() }}</span>
+    </div>
+  }
+
+  @if (popupLoading() || selectedEvent()) {
+    <div class="event-popup" role="dialog" aria-modal="true" aria-label="Event detail" (keydown)="onPopupKeydown($event)">
+      <button class="popup-close" type="button" aria-label="Close detail" (click)="closePopup()">✕</button>
+
+      @if (popupLoading()) {
+        <div class="popup-loading">Loading...</div>
+      } @else {
+        <app-event-detail-panel [event]="selectedEvent()!" />
+      }
+    </div>
+  }
+
+} @else {
+
+  <div class="map-placeholder">
+    <picture class="map-placeholder__picture">
+      <source srcset="img/background.webp" type="image/webp" />
+      <img class="map-placeholder__bg" src="img/background.png" alt="" aria-hidden="true" fetchpriority="high" />
+    </picture>
+
+    <div class="map-placeholder__overlay">
+      @if (mapState() === 'loading-assets') {
+        <div class="map-placeholder__status" role="status">
+          <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+          <span>Loading map…</span>
+        </div>
+      } @else if (mapState() === 'error') {
+        <div class="map-placeholder__status map-placeholder__status--error" role="alert">
+          <i class="pi pi-exclamation-triangle" aria-hidden="true"></i>
+          <span>Failed to load map</span>
+          <button class="map-open-btn" type="button" (click)="openMap()">
+            <i class="pi pi-refresh" aria-hidden="true"></i>
+            Retry
+          </button>
+        </div>
+      } @else {
+        <button class="map-open-btn" type="button" (click)="openMap()">
+          <i class="pi pi-globe" aria-hidden="true"></i>
+          Open 3D Map
+        </button>
+      }
+    </div>
+  </div>
+
+}

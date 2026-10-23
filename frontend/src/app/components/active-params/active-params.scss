@@ -1,0 +1,78 @@
+:host {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.event-count {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  padding: 0 0.5rem;
+  flex-shrink: 0;
+
+  &--truncated {
+    color: var(--color-severity-med);
+  }
+}
+
+.filter-summary-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  min-width: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.15rem 0.25rem;
+  border-radius: 4px;
+  font-family: inherit;
+  transition: background 0.15s;
+
+  &:hover {
+    background: var(--color-bg-overlay-hover);
+  }
+}
+
+.filter-summary {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.summary-chevron {
+  font-size: 0.7rem;
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+
+/* Light mode: raise filter-summary contrast (muted is borderline on toolbar bg) */
+:host-context([data-theme='light']) .filter-summary,
+:host-context([data-theme='light']) .summary-chevron {
+  color: var(--color-text-primary);
+}
+
+/* Boost contrast further for users who explicitly prefer it */
+@media (prefers-contrast: more) {
+  .filter-summary,
+  .summary-chevron,
+  .event-count {
+    color: var(--color-text-primary);
+    font-weight: 700;
+  }
+}
+
+.summary-popover-text {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  max-width: 300px;
+  line-height: 1.7;
+  margin: 0;
+  white-space: normal;
+  word-break: break-word;
+}

@@ -1,0 +1,21 @@
+<div class="list-wrapper">
+  @if (isLoading()) {
+    <p class="list-status" role="status">
+      <i class="pi pi-spin pi-spinner" aria-hidden="true"></i> Loading events...
+    </p>
+  } @else if (events().length === 0) {
+    <p class="list-status" role="status">No events to show.</p>
+  } @else {
+    @for (event of events(); track event.properties.id; let i = $index) {
+      @if (i > 0 && i % 10 === 0) {
+        <button type="button" class="sr-only-focusable" (click)="backToTop()">Back to top of list</button>
+      }
+      <app-event-detail
+        [event]="event"
+        [position]="{ index: i, total: events().length }"
+        [asOf]="asOf()"
+        (selected)="eventSelected.emit($event)"
+      />
+    }
+  }
+</div>

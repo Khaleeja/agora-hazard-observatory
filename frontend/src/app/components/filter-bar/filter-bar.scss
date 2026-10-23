@@ -1,0 +1,28 @@
+:host {
+  display: block;
+  flex-shrink: 0;
+}
+
+.filter-bar {
+  border-bottom: 1px solid var(--color-border);
+}
+
+.toolbar-sep {
+  display: inline-block;
+  width: 1px;
+  height: 1.5rem;
+  background: var(--color-border);
+  margin: 0 0.25rem;
+  vertical-align: middle;
+}
+
+.type-toggles-group {
+  display: contents; // transparent to parent flex — ID is preserved for skip-link anchor
+}
+
+.drawer-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 999;
+}

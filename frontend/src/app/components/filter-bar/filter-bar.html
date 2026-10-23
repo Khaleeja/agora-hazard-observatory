@@ -1,0 +1,31 @@
+<div class="filter-bar">
+  <p-toolbar>
+    <ng-template #start>
+      <p-button icon="pi pi-clock" label="Last 24h" severity="secondary" [outlined]="true" ariaLabel="Load events from the last 24 hours" (onClick)="daily()" />
+      <span class="toolbar-sep" aria-hidden="true"></span>
+      <p-button icon="pi pi-bars" label="Filters" [text]="true" (onClick)="openDrawer()" aria-label="Open filters panel" />
+    </ng-template>
+    <ng-template #center>
+      <div id="event-types-region" class="type-toggles-group" role="group" aria-label="Event types">
+        @for (t of eventTypes; track t.name) {
+          <p-togglebutton
+            [ngModel]="isTypeActive(t.name)"
+            (ngModelChange)="toggleType(t.name)"
+            [onLabel]="t.label"
+            [offLabel]="t.label"
+          />
+        }
+      </div>
+    </ng-template>
+    <ng-template #end>
+      <app-active-params />
+    </ng-template>
+  </p-toolbar>
+
+  @if (visible()) {
+    <div class="drawer-overlay" aria-hidden="true" (click)="onDrawerHide()"></div>
+  }
+  <p-drawer [visible]="visible()" [modal]="false" (onHide)="onDrawerHide()" (onShow)="focusFirstInFilter()">
+    <app-filter id="main-filter-region" />
+  </p-drawer>
+</div>
