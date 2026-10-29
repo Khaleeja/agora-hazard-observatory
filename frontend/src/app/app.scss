@@ -66,6 +66,59 @@ header {
   }
 }
 
+.status-badge {
+  position: relative;
+  flex-shrink: 0;
+  font-size: 0.75rem;
+
+  // Browser-default disclosure triangle replaced by our own layout below
+  summary {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.25rem 0.6rem;
+    border-radius: 6px;
+    border: 1px solid var(--color-border);
+    background: var(--color-bg-overlay);
+    color: var(--color-text-muted);
+    cursor: pointer;
+    list-style: none;
+
+    &::-webkit-details-marker {
+      display: none;
+    }
+
+    &:hover {
+      background: var(--color-bg-overlay-hover);
+    }
+  }
+
+  i {
+    font-size: 0.85rem;
+    color: var(--color-status-ok);
+  }
+
+  &.status-degraded i {
+    color: var(--color-status-degraded);
+  }
+
+  .status-details {
+    position: absolute;
+    top: calc(100% + 0.35rem);
+    right: 0;
+    z-index: 20;
+    min-width: 220px;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    border: 1px solid var(--color-border);
+    background: var(--color-bg-component);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    color: var(--color-text-primary);
+    font-size: 0.8rem;
+    line-height: 1.5;
+  }
+}
+
 .theme-toggle {
   display: flex;
   align-items: center;

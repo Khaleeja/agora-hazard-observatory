@@ -1,12 +1,17 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { EventSearchParams } from '../types/EventSearchParams';
+import { EVENT_TYPES } from '../strategies/event-type.registry';
 
 @Injectable({
   providedIn: 'root',
 })
 export class FilterService {
-  private readonly _typeList = new BehaviorSubject<string[]>(['earthquake']);
+  // Every registered type is active by default — driven by the registry
+  // itself, not a hardcoded list, so a future new phenomenon/type is
+  // automatically included here too without needing to remember to update
+  // this line.
+  private readonly _typeList = new BehaviorSubject<string[]>(EVENT_TYPES.map((t) => t.name));
   private readonly _severityList = new BehaviorSubject<('Low' | 'Medium' | 'High')[]>([]);
   private readonly _categoryList = new BehaviorSubject<string[]>([]);
   private readonly _draft = new BehaviorSubject<EventSearchParams>({});

@@ -3,6 +3,7 @@ import { BehaviorSubject, catchError, combineLatest, Observable, of, TimeoutErro
 import { GeoJSONCollection, GeoJSONFeature } from '../types/GeoJSONFeature';
 import { HttpClient } from '@angular/common/http';
 import { FilterService } from './filter';
+import { HealthService, IngestionStatus } from './health';
 import { EventSearchParams } from '../types/EventSearchParams';
 
 @Injectable({
@@ -11,6 +12,7 @@ import { EventSearchParams } from '../types/EventSearchParams';
 export class EventService {
   private readonly _http = inject(HttpClient);
   private readonly _filter = inject(FilterService);
+  private readonly _health = inject(HealthService);
   private readonly _listEvents = new BehaviorSubject<GeoJSONFeature[]>([]);
   private readonly _error = new BehaviorSubject<string | null>(null);
   private readonly _loading = new BehaviorSubject<boolean>(false);
@@ -61,6 +63,33 @@ export class EventService {
     return this._asOf.asObservable();
   }
 
+  /**
+   * A 502/503/504/0 on its own just means "no usable response came back" —
+   * it looks the same whether the server is genuinely down or simply still
+   * loading its initial data after a (re)start (which can take a while, see
+   * StartupService on the backend). Consulting the last known /health
+   * snapshot lets us tell the user which one it actually is, instead of
+   * always implying an outage.
+   */
+  private _describeUnreachable(status: number, types: string[]): string {
+    const health = this._health.snapshot();
+    const relevant = types
+      .map((t) => health?.ingestion[t])
+      .filter((s): s is IngestionStatus => s !== undefined);
+
+    if (relevant.some((s) => s.state === 'loading')) {
+      return 'The server is still loading its initial data — this is expected right after a restart, not an outage. Results will fill in over the next few minutes.';
+    }
+    const failed = relevant.find((s) => s.state === 'failed');
+    if (failed) {
+      return `This data source is currently unavailable (${failed.error ?? 'unknown error'}). Last successful update: ${failed.lastUpdated ? new Date(failed.lastUpdated).toLocaleString() : 'never'}.`;
+    }
+
+    if (status === 0) return 'Cannot reach the server. Check your connection or try again later.';
+    if (status === 503) return 'The service is temporarily unavailable. Try again shortly.';
+    return `Gateway error (${status}) — the server may be restarting. Try again shortly.`;
+  }
+
   private _newSearch(params: EventSearchParams, types: string[]): void {
     this._loading.next(true);
     this._error.next(null);
@@ -84,7 +113,8 @@ export class EventService {
     // track overlaps it, with tolerance for IBTrACS's reporting lag; a
     // magnitude filter only ever constrains earthquake-shaped documents,
     // never silently excluding cyclones from a mixed search, and vice
-    // versa for category). See GeoEventRepository._applyPerPhenomenonFilters.
+    // versa for category). See GeoEventRepository._buildQuery on the
+    // backend, which builds one query branch per phenomenon type.
     if (params.minmag != null) url.searchParams.set('minmag', String(params.minmag));
     if (params.maxmag != null) url.searchParams.set('maxmag', String(params.maxmag));
     this._asOf.next(params.to ? new Date(params.to).getTime() : Date.now());
@@ -111,14 +141,10 @@ export class EventService {
                 ? `Invalid filters: ${detail}`
                 : 'Invalid filter combination — check date range and magnitude values.',
             );
-          } else if (err.status === 0) {
-            this._error.next('Cannot reach the server. Check your connection or try again later.');
           } else if (err.status === 500) {
             this._error.next('The server encountered an internal error. Try again in a moment.');
-          } else if (err.status === 502 || err.status === 504) {
-            this._error.next(`Gateway error (${err.status}) — the server may be restarting. Try again shortly.`);
-          } else if (err.status === 503) {
-            this._error.next('The service is temporarily unavailable. Try again shortly.');
+          } else if (err.status === 0 || err.status === 502 || err.status === 503 || err.status === 504) {
+            this._error.next(this._describeUnreachable(err.status, types));
           } else {
             this._error.next(`Unexpected error (${err.status ?? 'unknown'}). Refresh the page or try again.`);
           }

@@ -25,6 +25,29 @@
       <app-active-params />
     </div>
   }
+  @if (health(); as h) {
+    <!-- Native <details>/<summary>: keyboard-operable and announced as
+         expanded/collapsed by screen readers with no custom ARIA wiring —
+         the per-type status text below is real content, not a hover-only
+         title tooltip (which isn't reliably exposed to assistive tech, is
+         unreachable by keyboard, and unreachable on touch). -->
+    <details class="status-badge" [class.status-degraded]="h.status !== 'ok'">
+      <summary [attr.aria-label]="'Data status: ' + (h.status === 'ok' ? 'all sources OK' : 'degraded') + ', version ' + h.version + '. Activate for details.'">
+        <i
+          class="pi"
+          [class.pi-check-circle]="h.status === 'ok'"
+          [class.pi-exclamation-triangle]="h.status !== 'ok'"
+          aria-hidden="true"
+        ></i>
+        <span class="status-version">v{{ h.version }}</span>
+      </summary>
+      <div class="status-details" role="list">
+        @for (entry of ingestionEntries(h); track entry.type) {
+          <div role="listitem">{{ entry.type }}: {{ entry.description }}</div>
+        }
+      </div>
+    </details>
+  }
   <button
     class="theme-toggle"
     (click)="theme.toggle()"

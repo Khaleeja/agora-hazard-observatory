@@ -69,8 +69,11 @@ export class FilterComponent {
     initialValue: [] as string[],
   });
 
-  protected fromDate = '';
-  protected toDate = '';
+  // Mirrors FilterService.commitDaily()'s default committed search (last
+  // 24h) so the fields shown on first load already match what's actually
+  // being searched, instead of sitting empty until the user touches them.
+  protected fromDate = new Date(Date.now() - 86_400_000).toISOString().slice(0, 10);
+  protected toDate = new Date().toISOString().slice(0, 10);
   protected fromAll = false;
   protected toNow = false;
   protected minMag: number | null = null;

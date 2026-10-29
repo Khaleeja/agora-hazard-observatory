@@ -22,6 +22,10 @@
   --color-severity-high-rgb: 251, 113, 133;
 
   --severity-badge-opacity: 0.15;
+
+  /* Data-status badge icon — ~6:1 / ~4.5:1 against --color-bg-component */
+  --color-status-ok: #22c55e;
+  --color-status-degraded: #f59e0b;
 }
 
 /* ─── Palette — Light ──────────────────────────────────────── */
@@ -48,6 +52,11 @@
 
   /* Badge opacity più alta per risaltare su sfondo chiaro */
   --severity-badge-opacity: 0.35;
+
+  /* Data-status badge icon — darker shades than dark mode's, verified
+     ≥3:1 against --color-bg-component (#e8ecf2): green ~4.46:1, amber ~4.22:1 */
+  --color-status-ok: #15803d;
+  --color-status-degraded: #b45309;
 }
 
 /* ─── Reset ───────────────────────────────────────────────── */

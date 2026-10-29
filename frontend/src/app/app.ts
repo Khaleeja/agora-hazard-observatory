@@ -17,9 +17,11 @@ import { MapComponent } from './components/map/map';
 import { ActiveParams } from './components/active-params/active-params';
 import { EventService } from './services/event';
 import { FilterService } from './services/filter';
+import { HealthService, HealthResponse, IngestionStatus } from './services/health';
 import { ThemeService } from './services/theme';
 import { GeoJSONFeature } from './types/GeoJSONFeature';
 import { EVENT_TYPES } from './strategies/event-type.registry';
+import { TimeFormatPipe } from './pipes/time-format.pipe';
 
 @Component({
   selector: 'app-root',
@@ -34,8 +36,12 @@ import { EVENT_TYPES } from './strategies/event-type.registry';
 export class App {
   private readonly _eventService = inject(EventService);
   private readonly _filterService = inject(FilterService);
+  private readonly _healthService = inject(HealthService);
   private readonly _messageService = inject(MessageService);
+  private readonly _timeFormat = new TimeFormatPipe();
   protected readonly theme = inject(ThemeService);
+
+  protected readonly health = toSignal<HealthResponse | null>(this._healthService.getHealth(), { initialValue: null });
 
   protected readonly title = signal('AGORA Monitoring App');
   protected readonly events = toSignal(this._eventService.getEventList(), { initialValue: [] });
@@ -166,5 +172,19 @@ export class App {
 
   protected toggleType(name: string): void {
     this._filterService.toggleEventType({ name, status: !this.isTypeActive(name) });
+  }
+
+  protected ingestionEntries(h: HealthResponse): { type: string; description: string }[] {
+    return Object.entries(h.ingestion).map(([type, s]) => ({
+      type,
+      description: this._describeIngestionStatus(s),
+    }));
+  }
+
+  private _describeIngestionStatus(s: IngestionStatus): string {
+    if (s.state === 'loading') return 'loading initial data…';
+    const age = s.lastUpdated ? this._timeFormat.transform(s.lastUpdated) : 'never';
+    if (s.state === 'failed') return `unavailable (${s.error ?? 'unknown error'}) — last update ${age}`;
+    return `updated ${age}`;
   }
 }
