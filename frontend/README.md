@@ -4,7 +4,7 @@
 
 # AGORA Frontend
 
-**Real-time geospatial event monitoring on an interactive 3D globe**
+**Real-time natural-hazard monitoring on an interactive 3D globe**
 
 [![Angular](https://img.shields.io/badge/Angular-21-DD0031?logo=angular&logoColor=white)](https://angular.dev)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
@@ -19,242 +19,34 @@
 
 ---
 
-<div align="center">
-
-| 🇮🇹 Italiano | 🇬🇧 English |
-|:---|:---|
-| [Panoramica](#panoramica) | [Overview](#overview) |
-| [Stack tecnologico](#stack-tecnologico) | [Tech Stack](#tech-stack) |
-| [Prerequisiti](#prerequisiti) | [Prerequisites](#prerequisites) |
-| [Installazione](#installazione) | [Installation](#installation) |
-| [Avvio in sviluppo](#avvio-in-sviluppo) | [Running in Development](#running-in-development) |
-| [Build di produzione](#build-di-produzione) | [Production Build](#production-build) |
-| [Docker](#docker) | [Docker](#docker-1) |
-| [Struttura del progetto](#struttura-del-progetto) | [Project Structure](#project-structure) |
-| [CI / CD](#ci--cd) | [CI / CD](#ci--cd-1) |
-
-</div>
-
----
-
-## Panoramica
-
-AGORA è una single-page application che visualizza eventi geospaziali — terremoti, incendi, alluvioni e altro — su un globo 3D interattivo basato su CesiumJS. L'utente può filtrare gli eventi per tipo, severità e raggio geografico, sfogliare una lista sincronizzata e consultare il dettaglio completo in un pannello laterale.
-
-**Funzionalità principali**
-
-- Globo 3D (CesiumJS) con marker raggruppati e colorazione per tipo di evento
-- Pannello filtri con selezione posizione testuale e click-to-place sul globo
-- Lista eventi e pannello di dettaglio sincronizzati (titolo, tipo, severità, timestamp, coordinate, fonte)
-- Completamente responsive — layout a tab su mobile, affiancato su desktop
-- Angular 21 zoneless con reattività basata su Signal e gestione dello stato tramite RxJS `BehaviorSubject`
-
----
-
-## Stack tecnologico
-
-| Livello | Tecnologia |
-|---|---|
-| Framework | Angular 21 — zoneless, standalone components |
-| Linguaggio | TypeScript 5.9 |
-| Mappa 3D | CesiumJS 1.142 |
-| Componenti UI | PrimeNG 21 + PrimeIcons 7 |
-| Stato / Async | RxJS 7.8 (`BehaviorSubject`) + Angular Signals |
-| Stile | SCSS |
-| Testing | Vitest 4 + @testing-library/angular |
-| Linting | ESLint 10 + angular-eslint + Prettier |
-| Server di produzione | nginx 1.27 (Docker, multi-stage build) |
-
----
-
-## Prerequisiti
-
-| Strumento | Versione |
-|---|---|
-| Node.js | ≥ 22 |
-| npm | ≥ 10 |
-| Docker | qualsiasi versione recente (solo per deploy containerizzato) |
-| ArcGIS API key | piano gratuito su [developers.arcgis.com](https://developers.arcgis.com) |
-
----
-
-## Installazione
-
-```bash
-git clone https://github.com/Khaleeja/agora-hazard-observatory.git
-cd agora-hazard-observatory/frontend
-npm install
-```
-
-### File di ambiente
-
-Angular incorpora la configurazione nel bundle al momento della **compilazione**. Copia il template e inserisci la tua chiave:
-
-```bash
-cp src/environments/environment.example.ts src/environments/environment.ts
-```
-
-```ts
-// src/environments/environment.ts
-export const environment = {
-  arcgisApiKey: 'LA_TUA_ARCGIS_API_KEY',
-};
-```
-
-> `environment.ts` è in gitignore — non committare mai la chiave.
-
----
-
-## Avvio in sviluppo
-
-```bash
-npm start
-```
-
-Avvia il dev server Angular su **`http://localhost:4200`** con hot module reload.
-Le chiamate a `/api/` richiedono che il backend sia in esecuzione localmente sulla porta 3000.
-
-Altri comandi utili:
-
-```bash
-npm run lint    # controllo ESLint
-npm test        # test Vitest (singola esecuzione)
-npm run watch   # build incrementale in modalità development
-```
-
----
-
-## Build di produzione
-
-```bash
-npm run build
-```
-
-Compila e ottimizza l'app in `dist/AGORA-Frontend/browser/`.
-L'output è un bundle statico pronto per qualsiasi web server.
-
-Il file [`nginx.conf`](nginx.conf) incluso gestisce:
-
-- SPA fallback (`try_files $uri /index.html`)
-- Reverse proxy per `/api/` e `/ws/` → backend su `http://backend:3000`
-- Cache immutabile a lungo termine per gli asset con hash, `no-store` per `index.html`
-- Compressione gzip
-
----
-
-## Docker
-
-### Build dell'immagine
-
-La chiave ArcGIS viene incorporata nel bundle JS al momento della **build**. Hai due opzioni:
-
-**In locale** — se hai già `src/environments/environment.ts` configurato, il Dockerfile lo usa automaticamente:
-
-```bash
-docker build -t agora-frontend .
-```
-
-**In CI / su server** — dove `environment.ts` non esiste, passala come build argument:
-
-```bash
-docker build \
-  --build-arg ARCGIS_API_KEY=<la_tua_chiave> \
-  -t agora-frontend .
-```
-
-Se né il file né l'arg sono presenti, il Dockerfile usa `environment.example.ts` come fallback (utile per smoke test senza chiave reale).
-
-### Avvio standalone
-
-```bash
-docker run -d \
-  --name agora-frontend \
-  -p 8080:80 \
-  agora-frontend
-```
-
-App disponibile su **`http://localhost:8080`**.
-nginx si aspetta il backend raggiungibile su `http://backend:3000` nella rete Docker.
-
-### Stack completo con docker compose
-
-Usa il [`docker-compose.yml`](../docker-compose.yml) nella radice della repository per avviare MongoDB + backend + frontend con un solo comando:
-
-```bash
-# dalla radice della repository
-cp .env.example .env
-# compila ARCGIS_API_KEY, MONGO_ROOT_USERNAME, MONGO_ROOT_PASSWORD
-docker compose up --build
-```
-
-| Servizio | URL |
-|---|---|
-| Frontend | http://localhost:8080 |
-| Backend API | proxied via nginx su `/api/` |
-
-Per esporre MongoDB a Compass imposta `MONGO_COMPASS_PORT=27017` nel `.env` di radice.
-
----
-
-## Struttura del progetto
-
-```
-src/
-├── app/
-│   ├── components/
-│   │   ├── map/                    # Globo CesiumJS — smart component
-│   │   ├── filter-bar/             # Toolbar desktop + drawer — smart
-│   │   ├── filter/                 # Form filtri — smart
-│   │   ├── event-list/             # Lista eventi — dumb
-│   │   ├── event-detail-panel/     # Sidebar / overlay mobile dettaglio — dumb
-│   │   ├── active-params/          # Chip filtri attivi — dumb
-│   │   ├── news-ticker/            # Feed notizie WS (pianificato)
-│   │   └── trivia-ticker/          # Feed trivia WS (pianificato)
-│   ├── services/
-│   │   ├── event.ts                # Ricerca HTTP + dettaglio, stato BehaviorSubject
-│   │   ├── filter.ts               # State machine filtri (bozza → confermati)
-│   │   ├── theme.ts                # Tema chiaro / scuro
-│   │   └── websocket.ts            # Client WebSocket (pianificato)
-│   ├── strategies/                 # IEventTypeStrategy — rendering Cesium per tipo evento
-│   └── types/                      # GeoJSONFeature e interfacce correlate
-├── environments/
-│   ├── environment.example.ts      # Template committato (senza chiave reale)
-│   └── environment.ts              # Solo locale — gitignored
-public/
-│   ├── img/                        # Icone app (png + webp)
-│   └── favicon.ico
-nginx.conf                          # Configurazione nginx di produzione
-Dockerfile                          # Multi-stage: build Node → serve nginx
-../.github/workflows/frontend-ci.yml  # CI: lint → build → test → Docker smoke test
-```
-
----
-
-## CI / CD
-
-GitHub Actions si esegue automaticamente ad ogni push su `main` che tocca questa cartella:
-
-1. **Lint** — ESLint con regole angular-eslint
-2. **Build** — `ng build` (fallisce subito in caso di errori di tipo)
-3. **Test** — test unitari Vitest
-4. **Docker smoke test** — build dell'immagine con chiave fittizia, avvio container, verifica `curl http://localhost:8080/` restituisce 200
-
-Vedi [`../.github/workflows/frontend-ci.yml`](../.github/workflows/frontend-ci.yml) per la pipeline completa.
-
----
----
-
 ## Overview
 
-AGORA is a single-page application that visualises geospatial events — earthquakes, wildfires, floods, and more — on a CesiumJS 3D globe. Users can filter events by type, severity and location radius, browse a synchronised list, and inspect full event details in a sidebar panel.
+AGORA is a single-page application that visualises natural-hazard
+events — currently earthquakes and tropical cyclones, with the plugin
+architecture on both ends designed so more phenomenon types can be added
+without touching shared code — on a CesiumJS 3D globe. Users can filter
+events by type, severity, category, and location radius, browse a
+synchronised list, and inspect full event details in a sidebar panel.
 
 **Key features**
 
-- Interactive 3D globe (CesiumJS) with clustered markers and per-type colour coding
-- Filter panel with free-text location picker and click-to-place on the globe
-- Synchronised event list and detail panel (title, type, severity, timestamp, coordinates, source)
-- Fully responsive — tab-based layout on mobile, side-by-side on desktop
-- Zoneless Angular 21 with signal-based reactivity and RxJS `BehaviorSubject` state management
+- Interactive 3D globe (CesiumJS) with clustered markers and per-type
+  colour coding; a cyclone renders its full historical track, resolved to
+  whichever point was current as of the search's time window.
+- Every registered event type is active by default, driven by the same
+  `EVENT_TYPE_REGISTRY` the map/filter components consult — no type is
+  hardcoded as "the default one".
+- A small status badge (native `<details>`/`<summary>` — keyboard and
+  screen-reader accessible, no hover-only tooltip) shows the API version
+  and each phenomenon's ingestion status/freshness, polling `GET
+  /api/health` every 30s.
+- Filter panel with free-text location picker and click-to-place on the
+  globe.
+- Synchronised event list and detail panel (title, type, severity,
+  timestamp, coordinates, source).
+- Fully responsive — tab-based layout on mobile, side-by-side on desktop.
+- Zoneless Angular 21 with signal-based reactivity and RxJS
+  `BehaviorSubject` state management.
 
 ---
 
@@ -420,9 +212,10 @@ src/
 │   ├── services/
 │   │   ├── event.ts                # HTTP search + detail, BehaviorSubject state
 │   │   ├── filter.ts               # Filter state machine (draft → committed)
+│   │   ├── health.ts               # Polls /api/health, shared across consumers
 │   │   ├── theme.ts                # Light / dark theme
 │   │   └── websocket.ts            # WebSocket client (planned)
-│   ├── strategies/                 # IEventTypeStrategy — per-type Cesium rendering
+│   ├── strategies/                 # EventTypeStrategy — per-type Cesium rendering
 │   └── types/                      # GeoJSONFeature and related interfaces
 ├── environments/
 │   ├── environment.example.ts      # Committed template (no real key)
@@ -434,6 +227,12 @@ nginx.conf                          # Production nginx configuration
 Dockerfile                          # Multi-stage: Node build → nginx serve
 ../.github/workflows/frontend-ci.yml  # CI: lint → build → test → Docker smoke test
 ```
+
+`EventTypeStrategy` today covers map/detail rendering per phenomenon type;
+extending it to also own filter-field descriptors (so `FilterComponent`
+generates its filter UI from the registry instead of hand-written
+per-field branches, mirroring the backend's plugin) is a planned
+follow-up, not yet done.
 
 ---
 
