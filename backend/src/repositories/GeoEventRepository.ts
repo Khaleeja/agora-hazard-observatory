@@ -48,11 +48,19 @@ export class GeoEventRepository
 
     if (!explicitTypes) {
       // No type was actually requested — "every registered type" is not a
-      // real restriction, so eventType itself never appears in the query;
-      // an empty branch here would match every document and silently undo
-      // whatever another branch restricted, so a fragment with nothing left
-      // after stripping eventType is dropped instead of $or'd in.
-      const branches = extras.filter((e) => Object.keys(e).length > 0);
+      // real *restriction* on the result set, but each kept branch still
+      // carries its own eventType match (the full fragment, not the
+      // eventType-stripped `extras`): every compound index this repository
+      // maintains (ensureIndexes) leads with properties.eventType, so a
+      // branch without it can't be bounded by any of them and degenerates
+      // into a collection scan — costly once a data source holds enough
+      // history that "search a wide time range across every type" (the
+      // common case: no type filter is the frontend's default view) means
+      // scanning a large fraction of the collection on every request. A
+      // branch with nothing beyond eventType is still dropped: unlike
+      // `{eventType: {$in:[...]}}`, a bare `{}` would match every document
+      // and silently undo whatever another branch restricted.
+      const branches = fragments.filter((_, i) => Object.keys(extras[i]).length > 0);
       if (branches.length === 1) Object.assign(query, branches[0]);
       else if (branches.length > 1) query.$or = branches;
     } else if (!hasExtras) {

@@ -28,9 +28,14 @@ export const IBTrACSConfig = {
     "https://www.ncei.noaa.gov/data/international-best-track-archive-for-climate-stewardship-ibtracs/v04r01/access/csv/ibtracs.last3years.list.v04r01.csv",
   RequestTimeout: 120_000, // ms — a single bulk download, not many small requests; the full archive can take a while
   TimeOrigin: Date.UTC(1980, 0, 1), // matches the full archive's genuine coverage
+  // Minutes between scheduled checks when SCHEDULER_IBTRACS_INTERVAL isn't
+  // set in the environment — a sensible out-of-the-box default is this
+  // plugin's own fact, same as the URLs above; an operator overrides it via
+  // .env only when they actually want something different. NOAA itself
+  // only refreshes IBTrACS ~3x/week, so once a day is already generous.
+  DefaultRefreshRateMinutes: 1440,
   // Columns read from the CSV by name (see IBTrACSAdapter). NOAA's CSV
-  // header is uppercase/underscored, unlike the lowercase ERDDAP variable
-  // names this project used before.
+  // header is uppercase/underscored.
   Columns: {
     sid: "SID",
     name: "NAME",
@@ -48,7 +53,7 @@ export const IBTrACSConfig = {
 };
 
 // Cyclone-only query knowledge, read by IBTrACSStrategy.parseSearchParams —
-// used to live in RESTConfig.ts, moved here since nothing but this plugin
-// needs it.
+// lives here rather than in the shared RESTConfig since nothing but this
+// plugin needs it.
 export const VALID_CATEGORIES = ["TD", "TS", "1", "2", "3", "4", "5"] as const;
 export const VALID_BASINS = ["NA", "EP", "WP", "NI", "SI", "SP", "SA"] as const;

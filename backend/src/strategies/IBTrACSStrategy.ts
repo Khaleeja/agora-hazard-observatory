@@ -62,13 +62,6 @@ export class IBTrACSStrategy implements IPhenomenonPlugin {
   // treat a genuinely active-but-stale storm as gone. It's a property of
   // this data source's own update cadence, not of "now" — applies the same
   // way to a historical window as to a live one.
-  //
-  // TEMPORARY DUPLICATE: GeoEventRepository still has its own copy of this
-  // same constant (CYCLONE_UPDATE_LAG_MS), used by the old
-  // _applyPerPhenomenonFilters code path that is still what's actually
-  // wired up and running. Once the repository is migrated to consult
-  // PhenomenonRegistry (and the old method is deleted), delete that copy —
-  // this one becomes the only one.
   private static readonly CYCLONE_UPDATE_LAG_MS = 10 * 24 * 60 * 60 * 1000;
 
   private _sleep(ms: number): Promise<void> {
@@ -232,7 +225,11 @@ export class IBTrACSStrategy implements IPhenomenonPlugin {
   }
 
   public getRefreshRate(): number {
-    return parseInt(process.env.SCHEDULER_IBTRACS_INTERVAL || "0", 10);
+    // Not an env-configurable knob: once this matches the source's own real
+    // update cadence (NOAA refreshes IBTrACS ~3x/week), there's no reason
+    // for any deployment to ever want a different value — it's a fact about
+    // this data source, same as its URL.
+    return IBTrACSConfig.DefaultRefreshRateMinutes * 60_000;
   }
 
   public getEventType(): string {

@@ -48,7 +48,7 @@ const makeApp = (overrides: Partial<EventSearchService> = {}, status = new Inges
 
 // â”€â”€â”€ GET /api/events/search â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-describe("GET /api/events/search â€” routing and response shape", () => {
+describe("GET /api/events/search — routing and response shape", () => {
   it("responds with 200 and Content-Type application/json", async () => {
     const { app } = makeApp();
     await request(app)
@@ -102,7 +102,7 @@ describe("GET /api/events/search â€” routing and response shape", () => {
   });
 });
 
-describe("GET /api/events/search â€” 400 via HTTP", () => {
+describe("GET /api/events/search — 400 via HTTP", () => {
   it("400 when minmag is not a number", async () => {
     const { app } = makeApp();
     const res = await request(app)
@@ -136,7 +136,7 @@ describe("GET /api/events/search â€” 400 via HTTP", () => {
   });
 });
 
-describe("GET /api/events/search â€” 422 and 500 via HTTP", () => {
+describe("GET /api/events/search — 422 and 500 via HTTP", () => {
   it("422 when the service throws SearchValidationError", async () => {
     const { app } = makeApp({
       searchEvents: jest
@@ -158,7 +158,7 @@ describe("GET /api/events/search â€” 422 and 500 via HTTP", () => {
 
 // â”€â”€â”€ GET /api/events/:id â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-describe("GET /api/events/:id â€” routing and response shape", () => {
+describe("GET /api/events/:id — routing and response shape", () => {
   it("200 and returns the event body when found", async () => {
     const feature = makeFeature();
     const { app } = makeApp({
@@ -184,7 +184,7 @@ describe("GET /api/events/:id â€” routing and response shape", () => {
   });
 });
 
-describe("GET /api/events/:id â€” 400 via HTTP", () => {
+describe("GET /api/events/:id — 400 via HTTP", () => {
   it("400 when source query param is missing", async () => {
     const { app } = makeApp();
     await request(app).get("/api/events/nc123").expect(400);
@@ -201,7 +201,7 @@ describe("GET /api/events/:id â€” 400 via HTTP", () => {
   });
 });
 
-describe("GET /api/events/:id â€” 500 via HTTP", () => {
+describe("GET /api/events/:id — 500 via HTTP", () => {
   it("500 when service throws and does not leak error details", async () => {
     const { app } = makeApp({
       getEventById: jest

@@ -179,7 +179,11 @@ export class USGSStrategy implements IPhenomenonPlugin {
   }
 
   public getRefreshRate(): number {
-    return parseInt(process.env.SCHEDULER_USGS_INTERVAL || "0", 10);
+    // Not an env-configurable knob: earthquakes happen continuously, so
+    // once this matches a satisfying polling cadence there's no reason for
+    // any deployment to ever want a different value — it's a fact about
+    // this data source, same as its URL.
+    return USGSConfig.DefaultRefreshRateMinutes * 60_000;
   }
 
   public getEventType(): string {

@@ -267,18 +267,30 @@ describe("GeoEventRepository._buildQuery", () => {
   };
 
   it("from filter uses $gte on properties.timestamp, scoped per phenomenon once no type is given", async () => {
-    // CHANGED by the plugin migration: with no explicit type, every
-    // registered phenomenon's own time semantics apply (earthquake exact,
-    // cyclone with lag tolerance) — they disagree on what `from` means for
-    // the same field, so they can no longer be merged into one flat
-    // condition the way the old hardcoded repository logic did. Never hit
-    // by the real frontend (it always sends an explicit type list).
+    // With no explicit type, every registered phenomenon's own time
+    // semantics apply (earthquake exact, cyclone with lag tolerance) — they
+    // disagree on what `from` means for the same field, so each needs its
+    // own branch rather than one flat condition. Not a path the real
+    // frontend takes today (it always sends an explicit type list), but the
+    // repository still has to handle it correctly.
     const query = await captureQuery({ from: 1000 });
     const [earthquakeBranch, cycloneBranch] = query.$or as Record<string, unknown>[];
     expect(earthquakeBranch["properties.timestamp"]).toMatchObject({ $gte: 1000 });
     expect(cycloneBranch["properties.timestamp"]).toMatchObject({
       $gte: 1000 - 10 * 24 * 60 * 60 * 1000,
     });
+  });
+
+  it("each $or branch still carries its own eventType, even with no explicit type requested", async () => {
+    // Every compound index this repository maintains (ensureIndexes) leads
+    // with properties.eventType, so a branch without it can't be bounded by
+    // any of them — a wide/unbounded time range then degenerates into a
+    // full collection scan. Each kept branch gets the full per-phenomenon
+    // fragment (eventType included), not just the time/field conditions.
+    const query = await captureQuery({ from: 1000, to: 9000 });
+    const [earthquakeBranch, cycloneBranch] = query.$or as Record<string, unknown>[];
+    expect(earthquakeBranch["properties.eventType"]).toMatchObject({ $in: ["earthquake"] });
+    expect(cycloneBranch["properties.eventType"]).toMatchObject({ $in: ["cyclone"] });
   });
 
   it("to filter uses $lte on properties.timestamp, scoped per phenomenon once no type is given", async () => {
@@ -349,12 +361,12 @@ describe("GeoEventRepository._buildQuery", () => {
   });
 
   it("windSpeed and magnitude filters coexist, scoped per phenomenon once no type is given", async () => {
-    // CHANGED by the plugin migration: minwind and minmag touch disjoint
-    // fields with no collision between phenomena, so merging them flat
-    // would still be correct — but the repository decides $or is needed
-    // purely from "is there more than one fragment with something to say",
-    // without inspecting which fields overlap. A deliberate simplicity
-    // trade-off for a path never hit by the real frontend.
+    // minwind and minmag touch disjoint fields with no collision between
+    // phenomena, so merging them into one flat condition would still be
+    // correct — but the repository decides $or is needed purely from "is
+    // there more than one fragment with something to say", without
+    // inspecting which fields overlap. A deliberate simplicity trade-off,
+    // and not a path the real frontend takes today anyway.
     const query = await captureQuery({ minwind: 34, minmag: 2 });
     const [earthquakeBranch, cycloneBranch] = query.$or as Record<string, unknown>[];
     expect(earthquakeBranch["properties.magnitude"]).toMatchObject({ $gte: 2 });
@@ -424,7 +436,7 @@ describe("GeoEventRepository._buildQuery", () => {
 
   it("regression: category filter in a mixed search no longer excludes earthquakes", async () => {
     // Bug found live: category is cyclone-only, but was applied as a
-    // top-level AND across the whole query â€” earthquakes have no category
+    // top-level AND across the whole query — earthquakes have no category
     // field at all, so they were silently dropped from every mixed search
     // that also filtered by category, not just narrowed on the cyclone side.
     const query = await captureQuery({
@@ -492,9 +504,11 @@ describe("GeoEventRepository._buildQuery", () => {
   });
 
   it("unfiltered search (no type at all): time window is still scoped per phenomenon via $or", async () => {
-    // CHANGED by the plugin migration — see the "from filter" test above for
-    // why. eventType itself still never appears: "every registered type" is
-    // not a real restriction.
+    // See the "from filter" test above for why each phenomenon needs its
+    // own branch here. The top-level eventType field itself still never
+    // appears — "every registered type" is not a real restriction — it only
+    // shows up per-branch, for index selectivity (see the "each $or branch
+    // still carries its own eventType" test above), not as a filter.
     const query = await captureQuery({ from: 1000, to: 9000 });
     expect(query["properties.eventType"]).toBeUndefined();
     const [earthquakeBranch, cycloneBranch] = query.$or as Record<string, unknown>[];

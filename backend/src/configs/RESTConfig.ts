@@ -1,9 +1,8 @@
-// Generic knowledge only — nothing phenomenon-specific belongs here. The
-// wind range and valid category/basin sets used to live here too, but
-// they're exclusively cyclone knowledge (same shape of problem as MAG_MIN/
-// MAG_MAX being earthquake-only), so they moved to IBTrACSConfig/
-// IBTrACSStrategy, next to the rest of what that plugin owns. WIND_MIN/MAX
-// stays here only until EventSearchService's validation is itself moved
+// Generic knowledge only — nothing phenomenon-specific belongs here, in
+// principle: WIND_MIN/MAX and MAG_MIN/MAX are actually earthquake/cyclone-
+// specific (the valid category/basin sets live in IBTrACSConfig instead,
+// next to the rest of what that plugin owns, for exactly this reason).
+// They stay here only until EventSearchService's validation itself moves
 // into the (future) EarthquakePlugin/CyclonePlugin's validateSearchParams.
 export const RESTConfig = {
   LIMIT: parseInt(process.env.MAX_EVENTS_LIMIT || "20000", 10),

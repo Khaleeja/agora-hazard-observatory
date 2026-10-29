@@ -1,4 +1,5 @@
 import { USGSStrategy } from "../strategies/USGSStrategy";
+import { USGSConfig } from "../configs/USGSConfig";
 
 const MONTH = 30 * 24 * 60 * 60 * 1000;
 const YEAR = 365 * 24 * 60 * 60 * 1000;
@@ -105,7 +106,7 @@ describe("USGSStrategy - getter methods", () => {
     expect(typeof strategy.getTimeOrigin()).toBe("number");
   });
 
-  it("getRefreshRate returns a number (from env or 0 as default)", () => {
-    expect(typeof strategy.getRefreshRate()).toBe("number");
+  it("getRefreshRate is USGSConfig.DefaultRefreshRateMinutes converted to ms — not env-configurable", () => {
+    expect(strategy.getRefreshRate()).toBe(USGSConfig.DefaultRefreshRateMinutes * 60_000);
   });
 });

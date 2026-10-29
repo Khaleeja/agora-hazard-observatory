@@ -6,11 +6,18 @@
 #   2. Copia backend/.env.example in backend/.env e compila gli altri valori backend
 #
 # Avvio: docker compose up --build
+#
+# Nota sui nomi: nessun container_name/volume name fisso qui sotto, di
+# proposito — Compose li genera da solo con un prefisso legato al nome del
+# progetto (la cartella, o il campo "name" sotto), così più copie di questo
+# stack (o altri progetti Docker con nomi di servizio simili, es. lo stack
+# "Stage" più vecchio) possono convivere senza mai collidere sul nome.
+
+name: agora-hazard-observatory
 
 services:
   mongodb:
     image: mongo:7
-    container_name: agora-mongo
     restart: unless-stopped
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME}
@@ -31,7 +38,6 @@ services:
 
   backend:
     build: ./backend
-    container_name: agora-backend
     restart: unless-stopped
     depends_on:
       mongodb:
@@ -46,7 +52,6 @@ services:
       context: ./frontend
       args:
         ARCGIS_API_KEY: ${ARCGIS_API_KEY}
-    container_name: agora-frontend
     restart: unless-stopped
     ports:
       - "8080:80"
@@ -55,6 +60,4 @@ services:
 
 volumes:
   mongo_data:
-    name: agora-mongo-data
   backend_logs:
-    name: agora-backend-logs

@@ -1,10 +1,16 @@
 # docker-compose.yml
 # Credentials and config are read from .env (gitignored).
 # Copy .env.example to .env and fill in the values before running.
+#
+# No fixed container_name below, on purpose — Compose derives one from the
+# project name so this can run alongside other AGORA-related stacks without
+# a name collision.
+
+name: agora-backend-standalone
+
 services:
   mongodb:
     image: mongo:7
-    container_name: agora-mongo
     restart: unless-stopped
     ports:
       - "27017:27017"
@@ -23,7 +29,6 @@ services:
 
   backend:
     build: .
-    container_name: agora-backend
     restart: unless-stopped
     ports:
       - "3000:3000"

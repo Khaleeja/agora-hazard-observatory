@@ -186,10 +186,13 @@ describe("IBTrACSStrategy metadata", () => {
     expect(new Date(strategy.getTimeOrigin()).getUTCFullYear()).toBe(1980);
   });
 
-  it("reads its refresh rate from SCHEDULER_IBTRACS_INTERVAL", () => {
-    const prev = process.env.SCHEDULER_IBTRACS_INTERVAL;
-    process.env.SCHEDULER_IBTRACS_INTERVAL = "12345";
-    expect(new IBTrACSStrategy().getRefreshRate()).toBe(12345);
-    process.env.SCHEDULER_IBTRACS_INTERVAL = prev;
+  it("getRefreshRate is IBTrACSConfig.DefaultRefreshRateMinutes converted to ms — not env-configurable", () => {
+    // Deliberately not read from the environment: NOAA refreshes IBTrACS
+    // ~3x/week regardless of who's running this backend, so there's no
+    // deployment that would sanely want a different cadence. It's a fact
+    // about this data source, same as its URL — see IBTrACSConfig.
+    expect(strategy.getRefreshRate()).toBe(
+      IBTrACSConfig.DefaultRefreshRateMinutes * 60_000,
+    );
   });
 });
