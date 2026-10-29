@@ -177,6 +177,11 @@ into the JS bundle at _build_ time (see [Running it](#running-it) above).
 Required for `npm start`/`ng serve`; for the Docker build, `ARCGIS_API_KEY`
 above is used instead.
 
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) — backend and frontend share one version
+number for the whole stack.
+
 ## License
 
 MIT — see [LICENSE](LICENSE).
