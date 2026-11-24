@@ -3,6 +3,7 @@
 **/dist/
 **/.angular/
 **/logs/
+**/.jest-logs/
 *.tsbuildinfo
 
 # Environment files — never commit real secrets, only *.example.* variants

@@ -122,6 +122,15 @@ so it ships with no embedded key; it works out of the box on the default
 OpenStreetMap basemap, and the optional "ArcGIS World Imagery" layer needs
 you to build your own image with your own free key instead.
 
+Without a cloned repo at all (just the image, e.g. plain `docker run`),
+there's no local `backend/logs` folder for the backend to bind-mount its
+logs to — they'd stay locked inside the container, lost on removal. Point
+them at a folder of your own instead:
+
+```sh
+docker run -d --env-file backend.env -v "C:\wherever\you\want\logs:/app/logs" ghcr.io/khaleeja/agora-backend:latest
+```
+
 **Everything, via Docker (building from source):**
 
 ```sh

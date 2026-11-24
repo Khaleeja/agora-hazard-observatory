@@ -52,7 +52,7 @@ jobs:
 
       - name: Smoke test
         run: |
-          docker run -d --name agora-test -p 8080:80 agora-frontend
+          docker run -d --name agora-test -p 8080:8080 agora-frontend
           sleep 3
           curl -f http://localhost:8080/ || (docker logs agora-test && exit 1)
           docker stop agora-test

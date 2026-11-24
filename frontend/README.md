@@ -168,7 +168,7 @@ If neither the file nor the arg is present, the Dockerfile falls back to `enviro
 ```bash
 docker run -d \
   --name agora-frontend \
-  -p 8080:80 \
+  -p 8080:8080 \
   agora-frontend
 ```
 

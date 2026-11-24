@@ -3,6 +3,7 @@
  * Shared Winston logger with module-scoped child loggers and helpers for HTTP and network error logging.
  */
 
+import path from "path";
 import winston, { createLogger, format, transports } from "winston";
 
 const stripHtml = (html: string): string =>
@@ -20,6 +21,11 @@ const readableFormat = format.printf(
 
 const logLevel = process.env.LOG_LEVEL || "debug";
 const logFilePath = process.env.LOG_FILE_PATH || "logs/error.log";
+// combined.log lives next to error.log rather than at a separately
+// hardcoded "logs/combined.log" — so overriding LOG_FILE_PATH (e.g. to
+// keep `npm test` from writing into the same files a real `npm run dev`/
+// Docker run does, see jest.setup.ts) redirects both at once.
+const combinedLogPath = path.join(path.dirname(logFilePath), "combined.log");
 
 export const logger = createLogger({
   level: logLevel,
@@ -39,7 +45,7 @@ export const logger = createLogger({
       format: readableFormat,
     }),
     new transports.File({
-      filename: "logs/combined.log",
+      filename: combinedLogPath,
       format: readableFormat,
     }),
   ],

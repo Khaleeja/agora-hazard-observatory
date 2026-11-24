@@ -45,7 +45,16 @@ services:
     env_file:
       - ./backend/.env
     volumes:
-      - backend_logs:/app/logs
+      # Bind-mounted to a real host folder (not a named volume) on purpose:
+      # error.log/combined.log end up as plain files in ./backend/logs/,
+      # openable with any text editor, instead of needing `docker cp` or
+      # `docker exec` to get at them. On Linux hosts, this can hit a
+      # permission mismatch against the backend image's non-root `node`
+      # user (bind mounts keep the host's UID/GID, not the image's) — if
+      # writes fail, `chmod 777 backend/logs` (or chown it to uid 1000) is
+      # the quick fix. Harmless on Windows/macOS, where Docker Desktop
+      # doesn't carry this UID mapping.
+      - ./backend/logs:/app/logs
 
   frontend:
     build:
@@ -54,10 +63,9 @@ services:
         ARCGIS_API_KEY: ${ARCGIS_API_KEY}
     restart: unless-stopped
     ports:
-      - "8080:80"
+      - "8080:8080" # container listens on 8080, not 80 — see frontend/Dockerfile
     depends_on:
       - backend
 
 volumes:
   mongo_data:
-  backend_logs:
