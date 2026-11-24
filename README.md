@@ -109,13 +109,34 @@ follow-up, not yet done.
 
 ## Running it
 
-**Everything, via Docker:**
+**Pre-built images, no build step:**
+
+Every [tagged release](https://github.com/Khaleeja/agora-hazard-observatory/releases)
+publishes `ghcr.io/khaleeja/agora-backend` and `ghcr.io/khaleeja/agora-frontend`
+(both `:<version>` and `:latest`). Point `docker-compose.yml`'s `backend`/
+`frontend` services at `image: ghcr.io/khaleeja/agora-backend:latest` (etc.)
+instead of their `build:` keys to use these directly — everything else
+(`.env`, `setup-env.js`) stays the same. The published frontend image is
+built without a real `ARCGIS_API_KEY` (see [below](#environment-variables)),
+so it ships with no embedded key; it works out of the box on the default
+OpenStreetMap basemap, and the optional "ArcGIS World Imagery" layer needs
+you to build your own image with your own free key instead.
+
+**Everything, via Docker (building from source):**
 
 ```sh
-cp .env.example .env                  # fill in ARCGIS_API_KEY, Mongo credentials
-cp backend/.env.example backend/.env  # fill in the backend's own settings
+node scripts/setup-env.js  # creates .env + backend/.env with fresh random Mongo credentials
 docker compose up --build
 ```
+
+`setup-env.js` generates its own random MongoDB username/password and writes
+the same pair into both files — safer than copying the `.env.example`
+templates by hand, which would otherwise leave their literal placeholder
+credentials (`some_admin`/`some_password`) in place if you forget to
+change them. It never overwrites an existing `.env`, so it's safe to run
+again later. You can still `cp .env.example .env` yourself instead if you
+specifically need to point at credentials of your own (e.g. an existing
+shared MongoDB) — either way, fill in `ARCGIS_API_KEY` by hand afterward.
 
 The frontend is served on `http://localhost:8080`. Note: the frontend
 container doesn't need `frontend/src/environments/environment.ts` — the
