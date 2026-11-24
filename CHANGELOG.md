@@ -6,6 +6,24 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 AGORA is versioned as a single product (backend + frontend share one
 version number) under [Semantic Versioning](https://semver.org/).
 
+## [1.0.1] - 2026-11-24
+
+### Changed
+
+- Both Docker images now publish to GHCR (`ghcr.io/khaleeja/agora-backend`,
+  `ghcr.io/khaleeja/agora-frontend`) on every tagged release; `setup-env.js`
+  generates random MongoDB credentials instead of leaving `.env.example`'s
+  placeholders in place.
+- Backend container now drops to the built-in non-root `node` user after
+  install; logs are bind-mounted as plain host files instead of a named
+  volume, so they're reachable without `docker cp`.
+- Frontend container now runs fully non-root (`nginxinc/nginx-unprivileged`,
+  port 8080), on an nginx/Alpine base current enough to pick up
+  outstanding OS CVEs.
+- Backend dependency fixes (`body-parser`, `proxy-addr`, `qs`); `ts-node`/
+  `typescript` moved to devDependencies so the production image no longer
+  installs them.
+
 ## [1.0.0] - 2026-10-29
 
 Initial public release.
@@ -34,4 +52,5 @@ Initial public release.
   markers (see the root README for the full pipeline).
 - Docker Compose setup for the full stack (MongoDB + backend + frontend).
 
+[1.0.1]: https://github.com/Khaleeja/agora-hazard-observatory/releases/tag/v1.0.1
 [1.0.0]: https://github.com/Khaleeja/agora-hazard-observatory/releases/tag/v1.0.0

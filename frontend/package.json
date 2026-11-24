@@ -1,6 +1,6 @@
 {
   "name": "agora-frontend",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Frontend for AGORA — All-Hazard Global Observation & Reporting Archive",
   "license": "MIT",
   "scripts": {

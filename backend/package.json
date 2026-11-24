@@ -1,6 +1,6 @@
 {
   "name": "agora-backend",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Backend for AGORA — All-Hazard Global Observation & Reporting Archive",
   "main": "index.ts",
   "scripts": {
